@@ -76,8 +76,8 @@ function clearState() {
 
 function buildPrint(doc, atts, items) {
   var td  = gToday();
-  var pts = doc.meet.split("-");
-  var dcode = pts[2]+pts[1]+pts[0].slice(2);
+  var tpts = td.split("-");
+  var dcode = tpts[2]+tpts[1]+tpts[0].slice(2);
   var fname = "BLI-GRS-ACLE-Weekly Meetings - MoM-"+p3(doc.num)+" ("+dcode+")";
 
   var aRows = atts.map(function(a) {
@@ -137,7 +137,6 @@ export default function App() {
   var [nxtId,setNxtId]   = useState(saved&&saved.nxtId ? saved.nxtId : 55);
   var [showA,setShowA]   = useState(false);
   var [toast,setToast]   = useState("");
-  var [expanded,setExp]  = useState({});
   var [sortCol,setSortCol] = useState(null);
   var [sortDir,setSortDir] = useState("asc");
   var [filters,setFilters] = useState({disc:"",stat:"",pri:"",resp:""});
@@ -178,7 +177,6 @@ export default function App() {
 
   function del(id){setItems(function(p){return p.filter(function(i){return i.id!==id;});});}
   function togA(i){setAtts(function(p){return p.map(function(a,j){return j===i?Object.assign({},a,{p:!a.p}):a;});});}
-  function toggleExp(id){setExp(function(s){var n=Object.assign({},s);n[id]=!n[id];return n;});}
   function toggleSort(col){
     if(sortCol===col) setSortDir(function(d){return d==="asc"?"desc":"asc";});
     else{setSortCol(col);setSortDir("asc");}
@@ -206,12 +204,13 @@ export default function App() {
   var overdue=items.filter(function(i){return i.act==="Yes"&&i.td&&ddiff(i.td,today)<0;}).length;
 
   var btnW={background:"#fff",color:GRS_RED,border:"1px solid #e2b4b7",borderRadius:4,padding:"3px 10px",fontSize:"11px",fontWeight:"bold",cursor:"pointer"};
-  var thSt={padding:"5px 7px",borderRight:"1px solid rgba(255,255,255,0.2)",textAlign:"left",fontSize:"11px",color:"#fff",background:GRS_RED,whiteSpace:"nowrap",cursor:"pointer",userSelect:"none"};
+  var thSt={padding:"5px 7px",borderRight:"1px solid rgba(255,255,255,0.2)",textAlign:"left",fontSize:"11px",color:"#fff",background:GRS_RED,whiteSpace:"nowrap",cursor:"pointer",userSelect:"none",position:"sticky",top:0,zIndex:10};
   var thNS=Object.assign({},thSt,{cursor:"default"});
   var fltSt={fontSize:"11px",border:"1px solid #d1d5db",borderRadius:4,padding:"2px 5px",background:"#fff"};
   var tdSt={borderBottom:"1px solid #e2e8f0",borderRight:"none",borderLeft:"none",borderTop:"none",padding:"2px 4px",verticalAlign:"top"};
   var selSt={background:"transparent",fontSize:"11px",border:"none",outline:"none"};
   var inSt={background:"transparent",fontSize:"11px",border:"none",outline:"none"};
+  var taSt={background:"transparent",fontSize:"11px",border:"none",outline:"none",fontFamily:"Calibri,sans-serif",resize:"vertical",minHeight:"38px",width:"100%"};
 
   function sa(c){return sortCol===c?(sortDir==="asc"?" ^":" v"):"";}
   function statColor(s){return s==="Open"?"#dc2626":"#16a34a";}
@@ -281,11 +280,10 @@ export default function App() {
         )}
       </div>
 
-      <div style={{padding:8,overflowX:"auto"}}>
+      <div style={{padding:"0 8px 8px",overflowX:"scroll",overflowY:"auto",maxHeight:"calc(100vh - 192px)"}}>
         <table style={{borderCollapse:"collapse",minWidth:1820,fontSize:"11px",width:"100%",background:"#fff"}}>
           <thead>
             <tr>
-              <th style={Object.assign({},thNS,{width:36})}>+/-</th>
               <th style={thSt} onClick={function(){toggleSort("id");}}>#{sa("id")}</th>
               <th style={thSt} onClick={function(){toggleSort("disc");}}>Discipline{sa("disc")}</th>
               <th style={thSt} onClick={function(){toggleSort("subj");}}>Subject{sa("subj")}</th>
