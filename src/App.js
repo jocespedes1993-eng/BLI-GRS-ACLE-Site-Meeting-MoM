@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 
 const GRS_RED = "#972D35";
 const DARK    = "#1e293b";
+const STORAGE_KEY = "bli_mom_v1";
 
 const ATTS_D = [
   {n:"Joaquin Cespedes",i:"JC",c:"GRS",p:true},{n:"Daniel Pinilla",i:"DP",c:"GRS",p:false},
@@ -53,7 +54,6 @@ const RESPS = ["GRS","ACLE","GRS/ACLE"];
 const STATS = ["Open","Closed"];
 const PRIS  = ["Low","Medium","High"];
 const INIS  = ["--","JC","DP","CP","SS","FZ","LS","JW","EP","PJ","SF","AC","JD","PS","IG","LG","KJ","AL","SH","ED","SC"];
-const STORAGE_KEY = "bli_mom_v1";
 
 function gToday() { return new Date().toISOString().split("T")[0]; }
 function ddiff(a,b) { if(!a||!b) return null; return Math.round((new Date(a)-new Date(b))/864e5); }
@@ -62,41 +62,34 @@ function p3(n) { return String(n).padStart(3,"0"); }
 function respColor(r) { return (r==="GRS"||r==="GRS/ACLE") ? GRS_RED : "#1e293b"; }
 
 function loadState() {
-  try {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch(e) { return null; }
+  try { var r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; } catch(e){return null;}
 }
-function saveState(state) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+function saveState(s) {
+  try { localStorage.setItem(STORAGE_KEY,JSON.stringify(s)); } catch(e){}
 }
 function clearState() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
 }
 
-function buildPrint(doc, atts, items) {
-  var td  = gToday();
-  var tpts = td.split("-");
-  var dcode = tpts[2]+tpts[1]+tpts[0].slice(2);
-  var fname = "BLI-GRS-ACLE-Weekly Meetings - MoM-"+p3(doc.num)+" ("+dcode+")";
-
-  var aRows = atts.map(function(a) {
+function buildPrint(doc,atts,items) {
+  var td=gToday();
+  var tpts=td.split("-");
+  var dcode=tpts[2]+tpts[1]+tpts[0].slice(2);
+  var fname="BLI-GRS-ACLE-Weekly Meetings - MoM-"+p3(doc.num)+" ("+dcode+")";
+  var aRows=atts.map(function(a){
     return "<tr><td>"+a.n+"</td><td align='center'>"+a.i+"</td><td align='center'>"+a.c+"</td>"
       +"<td align='center' style='color:"+(a.p?"#16a34a":"#dc2626")+";font-weight:bold'>"+(a.p?"Yes":"No")+"</td></tr>";
   }).join("");
-
-  var iRows = items.map(function(it) {
-    var age = (it.act==="Yes"&&it.dr) ? ddiff(td,it.dr)  : null;
-    var due = (it.act==="Yes"&&it.td) ? ddiff(it.td,td) : null;
-    var dc  = due!=null ? (due<0?"#dc2626":due<=3?"#d97706":"#16a34a") : "#666";
-    var sc  = it.stat==="Open" ? "#dc2626" : "#16a34a";
-    var rc  = respColor(it.resp);
+  var iRows=items.map(function(it){
+    var age=(it.act==="Yes"&&it.dr)?ddiff(td,it.dr):null;
+    var due=(it.act==="Yes"&&it.td)?ddiff(it.td,td):null;
+    var dc=due!=null?(due<0?"#dc2626":due<=3?"#d97706":"#16a34a"):"#666";
+    var sc=it.stat==="Open"?"#dc2626":"#16a34a";
+    var rc=respColor(it.resp);
     return "<tr style='border-bottom:1px solid #e2e8f0'>"
-      +"<td align='center'><b>"+it.id+"</b></td>"
-      +"<td>"+it.disc+"</td><td>"+it.subj+"</td>"
+      +"<td align='center'><b>"+it.id+"</b></td><td>"+it.disc+"</td><td>"+it.subj+"</td>"
       +"<td align='center' style='color:"+rc+";font-weight:bold'>"+it.resp+"</td>"
-      +"<td style='color:"+sc+";font-weight:bold'>"+it.stat+"</td>"
-      +"<td>"+it.pri+"</td>"
+      +"<td style='color:"+sc+";font-weight:bold'>"+it.stat+"</td><td>"+it.pri+"</td>"
       +"<td style='white-space:pre-wrap;max-width:200px'>"+it.notes+"</td>"
       +"<td style='white-space:pre-wrap;max-width:150px'>"+it.dec+"</td>"
       +"<td align='center' style='color:"+(it.act==="Yes"?"#16a34a":"#6b7280")+";font-weight:bold'>"+it.act+"</td>"
@@ -104,24 +97,18 @@ function buildPrint(doc, atts, items) {
       +"<td align='center'>"+fmtD(it.dr)+"</td>"
       +"<td align='center'>"+(it.act==="Yes"&&it.td?fmtD(it.td):"--")+"</td>"
       +"<td align='center'>"+(age!=null?age:"--")+"</td>"
-      +"<td align='center' style='color:"+dc+";font-weight:bold'>"+(due!=null?due:"--")+"</td>"
-      +"</tr>";
+      +"<td align='center' style='color:"+dc+";font-weight:bold'>"+(due!=null?due:"--")+"</td></tr>";
   }).join("");
-
   var h=[];
   h.push("<!DOCTYPE html><html><head><title>"+fname+"</title>");
-  h.push("<style>body{font-family:Calibri,sans-serif;font-size:9px;margin:10mm 8mm}");
-  h.push("h2{font-size:13px;text-align:center;margin:6px 0}table{border-collapse:collapse}");
-  h.push("th{background:"+GRS_RED+";color:#fff;padding:3px 5px}");
-  h.push("td{border:none;border-bottom:1px solid #e2e8f0;padding:2px 4px;vertical-align:top}");
-  h.push("@media print{@page{size:A3 landscape;margin:8mm}}</style></head><body>");
-  h.push("<div style='display:flex;justify-content:space-between;margin-bottom:6px'>");
-  h.push("<table style='border:none'><tr><td style='border:none'><b>Last print:</b></td><td style='border:none'>BLI-GRS-ACL-MOM-"+p3(doc.num-1)+"</td></tr>");
+  h.push("<style>body{font-family:Calibri,sans-serif;font-size:9px;margin:10mm 8mm}h2{font-size:13px;text-align:center;margin:6px 0}table{border-collapse:collapse}th{background:"+GRS_RED+";color:#fff;padding:3px 5px}td{border:none;border-bottom:1px solid #e2e8f0;padding:2px 4px;vertical-align:top}@media print{@page{size:A3 landscape;margin:8mm}}</style></head><body>");
+  h.push("<div style='display:flex;justify-content:space-between;margin-bottom:6px'><table style='border:none'>");
+  h.push("<tr><td style='border:none'><b>Last print:</b></td><td style='border:none'>BLI-GRS-ACL-MOM-"+p3(doc.num-1)+"</td></tr>");
   h.push("<tr><td style='border:none'><b>This Document:</b></td><td style='border:none;font-weight:bold;color:"+GRS_RED+"'>BLI-GRS-ACL-MOM-"+p3(doc.num)+"</td></tr></table></div>");
   h.push("<h2>BLI-GRS-ACLE- Site Meetings - MOM</h2>");
   h.push("<div style='display:flex;justify-content:space-between;margin-bottom:8px'>");
   h.push("<div><u><b>Attendees</b></u><br><table><tr><th>Name</th><th>Initial</th><th>Company</th><th>Present</th></tr>"+aRows+"</table></div>");
-  h.push("<div style='text-align:right;font-size:10px'><div><b>Meeting date</b> "+fmtD(doc.meet)+"</div><div><b>Issue date</b> "+fmtD(doc.issue)+"</div><div><b>Today</b> "+fmtD(td)+"</div></div></div>");
+  h.push("<div style='text-align:right;font-size:10px'><div><b>Meeting date</b> "+fmtD(doc.meet)+"</div><div><b>Issue date</b> "+fmtD(td)+"</div><div><b>Today</b> "+fmtD(td)+"</div></div></div>");
   h.push("<table style='width:100%'><thead><tr>");
   ["Item","Discipline","Subject","Responsible","Status","Priority","Current meeting - Notes","Decision / Direction","Action","Owner","Date raised","Target Date","Age","Due days"].forEach(function(c){h.push("<th>"+c+"</th>");});
   h.push("</tr></thead><tbody>"+iRows+"</tbody></table>");
@@ -130,30 +117,26 @@ function buildPrint(doc, atts, items) {
 }
 
 export default function App() {
-  var saved = loadState();
-  var [doc,setDoc]       = useState(saved&&saved.doc   ? saved.doc   : {num:8,meet:"2026-04-24",issue:"2026-04-24"});
-  var [atts,setAtts]     = useState(saved&&saved.atts  ? saved.atts  : ATTS_D);
-  var [items,setItems]   = useState(saved&&saved.items ? saved.items : IMS_D);
-  var [nxtId,setNxtId]   = useState(saved&&saved.nxtId ? saved.nxtId : 55);
-  var [showA,setShowA]   = useState(false);
-  var [toast,setToast]   = useState("");
+  var saved=loadState();
+  var [doc,setDoc]     = useState(saved&&saved.doc   ? saved.doc   : {num:8,meet:"2026-04-24",issue:"2026-04-24"});
+  var [atts,setAtts]   = useState(saved&&saved.atts  ? saved.atts  : ATTS_D);
+  var [items,setItems] = useState(saved&&saved.items ? saved.items : IMS_D);
+  var [nxtId,setNxtId] = useState(saved&&saved.nxtId ? saved.nxtId : 55);
+  var [showA,setShowA] = useState(false);
+  var [toast,setToast] = useState("");
   var [sortCol,setSortCol] = useState(null);
   var [sortDir,setSortDir] = useState("asc");
   var [filters,setFilters] = useState({disc:"",stat:"",pri:"",resp:""});
 
   function pop(msg){setToast(msg);setTimeout(function(){setToast("");},2500);}
 
-  function save(){
-    saveState({doc,atts,items,nxtId});
-    pop("Saved");
-  }
+  function save(){saveState({doc,atts,items,nxtId});pop("Saved");}
 
   function doReset(){
     setDoc({num:8,meet:"2026-04-24",issue:"2026-04-24"});
     setAtts(ATTS_D);setItems(IMS_D);setNxtId(55);
-    setSortCol(null);setFilters({disc:"",stat:"",pri:"",resp:""});setExp({});
-    clearState();
-    pop("Reset to MOM-007 defaults");
+    setSortCol(null);setFilters({disc:"",stat:"",pri:"",resp:""});
+    clearState();pop("Reset to MOM-007 defaults");
   }
 
   function newItem(afterId){
@@ -182,9 +165,9 @@ export default function App() {
     else{setSortCol(col);setSortDir("asc");}
   }
 
-  var today = gToday();
+  var today=gToday();
 
-  var displayed = useMemo(function(){
+  var displayed=useMemo(function(){
     var res=items.filter(function(i){
       return(!filters.disc||i.disc===filters.disc)
            &&(!filters.stat||i.stat===filters.stat)
@@ -224,7 +207,7 @@ export default function App() {
 
       <div style={{background:GRS_RED,color:"#fff",padding:"7px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:50}}>
         <div>
-          <div style={{fontWeight:"bold",fontSize:"13px"}}>BLI-GRS-ACLE  Site Meetings MoM</div>
+          <div style={{fontWeight:"bold",fontSize:"13px"}}>BLI-GRS-ACLE Site Meetings MoM</div>
           <div style={{fontSize:"10px",opacity:0.85}}>Blindcreek Solar Farm &amp; BESS</div>
         </div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
@@ -239,9 +222,12 @@ export default function App() {
       <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"5px 12px",display:"flex",flexWrap:"wrap",gap:10,alignItems:"center"}}>
         <span style={{fontSize:"11px",color:"#64748b"}}>Last print: <b style={{color:"#334155"}}>BLI-GRS-ACL-MOM-{p3(doc.num-1)}</b></span>
         <span style={{fontSize:"11px",color:"#64748b"}}>This Document: <b style={{color:GRS_RED,fontSize:"13px"}}>BLI-GRS-ACL-MOM-{p3(doc.num)}</b></span>
-        <span style={{fontSize:"11px",color:"#94a3b8"}}>Doc#<input type="number" value={doc.num} onChange={function(e){setDoc(function(d){return Object.assign({},d,{num:+e.target.value});});}} style={{width:44,border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4,textAlign:"center"}}/></span>
-        <span style={{fontSize:"11px",color:"#94a3b8"}}>Meeting<input type="date" value={doc.meet} onChange={function(e){setDoc(function(d){return Object.assign({},d,{meet:e.target.value});});}} style={{border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4}}/></span>
-        <span style={{fontSize:"11px",color:"#94a3b8"}}>Issue<input type="date" value={doc.issue} onChange={function(e){setDoc(function(d){return Object.assign({},d,{issue:e.target.value});});}} style={{border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4}}/></span>
+        <span style={{fontSize:"11px",color:"#94a3b8"}}>Doc#
+          <input type="number" value={doc.num} onChange={function(e){setDoc(function(d){return Object.assign({},d,{num:+e.target.value});});}} style={{width:44,border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4,textAlign:"center"}}/>
+        </span>
+        <span style={{fontSize:"11px",color:"#94a3b8"}}>Meeting
+          <input type="date" value={doc.meet} onChange={function(e){setDoc(function(d){return Object.assign({},d,{meet:e.target.value});});}} style={{border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4}}/>
+        </span>
         <span style={{marginLeft:"auto",fontSize:"11px",color:"#64748b"}}>Today: <b>{fmtD(today)}</b></span>
       </div>
 
@@ -304,19 +290,10 @@ export default function App() {
           <tbody>
             {displayed.map(function(it){
               var isNew=it.dr===today;
-              var isExp=!!expanded[it.id];
               var age=(it.act==="Yes"&&it.dr)?ddiff(today,it.dr):null;
               var due=(it.act==="Yes"&&it.td)?ddiff(it.td,today):null;
-              var rowBg=isNew?"#fefce8":"#fff";
-              var taH=isExp?"auto":"32px";
-              var taOver=isExp?"auto":"hidden";
-              var taSt={background:"transparent",fontSize:"11px",border:"none",outline:"none",fontFamily:"Calibri,sans-serif",resize:isExp?"vertical":"none",height:taH,overflow:taOver,width:"100%"};
-              var expBSt={display:"block",width:"18px",height:"18px",lineHeight:"16px",textAlign:"center",borderRadius:"3px",fontSize:"13px",fontWeight:"bold",cursor:"pointer",padding:0,margin:"2px auto",background:"#f1f5f9",border:"1px solid #cbd5e1",color:"#475569"};
               return (
-                <tr key={it.id} style={{background:rowBg,borderBottom:"1px solid #e2e8f0"}}>
-                  <td style={Object.assign({},tdSt,{textAlign:"center",verticalAlign:"middle"})}>
-                    <button style={expBSt} onClick={function(){toggleExp(it.id);}}>{isExp?"-":"+"}</button>
-                  </td>
+                <tr key={it.id} style={{background:isNew?"#fefce8":"#fff",borderBottom:"1px solid #e2e8f0"}}>
                   <td style={Object.assign({},tdSt,{textAlign:"center",fontWeight:"bold",color:"#334155",minWidth:28})}>
                     {it.id}{isNew&&<div style={{color:"#d97706",fontSize:"9px"}}>NEW</div>}
                   </td>
@@ -353,7 +330,7 @@ export default function App() {
           </tbody>
         </table>
         <div style={{marginTop:6,fontSize:"10px",color:"#94a3b8"}}>
-          Click headers to sort. +/- expands row. Status: <span style={{color:"#dc2626"}}>Open</span> / <span style={{color:"#16a34a"}}>Closed</span>. Due: <span style={{color:"#dc2626"}}>red=overdue</span> / <span style={{color:"#d97706"}}>orange=3 days</span> / <span style={{color:"#16a34a"}}>green=ok</span>.
+          Click headers to sort. Drag bottom-right of Notes/Decision cells to expand. Status: <span style={{color:"#dc2626"}}>Open</span> / <span style={{color:"#16a34a"}}>Closed</span>. Due: <span style={{color:"#dc2626"}}>overdue</span> / <span style={{color:"#d97706"}}>3 days</span> / <span style={{color:"#16a34a"}}>ok</span>.
         </div>
       </div>
     </div>
