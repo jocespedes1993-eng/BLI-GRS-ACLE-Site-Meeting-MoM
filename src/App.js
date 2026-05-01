@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
 
 const GRS_RED = "#972D35";
-const DARK    = "#1e293b";
-const STORAGE_KEY = "bli_mom_v1";
+const DARK = "#1e293b";
+const STORAGE_KEY = "bli_mom_versions_v1";
 
 const ATTS_D = [
   {n:"Joaquin Cespedes",i:"JC",c:"GRS",p:true},{n:"Daniel Pinilla",i:"DP",c:"GRS",p:false},
@@ -19,13 +19,13 @@ const ATTS_D = [
 
 const IMS_D = [
   {id:3,disc:"Logistics",subj:"Timbers (Unloading)",resp:"GRS/ACLE",stat:"Open",pri:"Low",notes:"PO done, shared to supplier. Prepayment required. ETA site: W20.",dec:"GRS to review timber quantities following ACLE feedback.",act:"No",own:"--",dr:"2026-01-21",td:""},
-  {id:5,disc:"Construction",subj:"Trackers survey & Data Design",resp:"ACLE",stat:"Open",pri:"High",notes:"Survey: Field 65.64%, ACLE 62.19%, GRE 32.29%. Design 8 full blocks ahead of workflow. Priority blocks 31-49 incl. north B20-30 south. ACLE tracking grass in surveyed areas, GRS requests mowing support.",dec:"",act:"No",own:"--",dr:"2026-01-21",td:""},
+  {id:5,disc:"Construction",subj:"Trackers survey & Data Design",resp:"ACLE",stat:"Open",pri:"High",notes:"Survey: Field 65.64%, ACLE 62.19%, GRE 32.29%. Design 8 full blocks ahead. Priority blocks 31-49 incl. north B20-30 south. GRS requests mowing support.",dec:"",act:"No",own:"--",dr:"2026-01-21",td:""},
   {id:9,disc:"Quality",subj:"Piles Bent in Delivery",resp:"GRS",stat:"Open",pri:"Low",notes:"Report from ACLE following PVH criteria is pending.",dec:"ACLE to update damaged quantities.",act:"Yes",own:"KJ",dr:"2026-03-06",td:"2026-04-23"},
   {id:10,disc:"Construction",subj:"Piling works",resp:"GRS",stat:"Open",pri:"High",notes:"Production: 18%, approx. 700 piles/day with 7-8 machines, DCB and COMBOX along with tracker piles.",dec:"",act:"No",own:"--",dr:"2026-03-06",td:""},
   {id:13,disc:"Logistics",subj:"Progress Summary",resp:"GRS",stat:"Open",pri:"Low",notes:"Warehouse: PVH 86, Tongwei 71. Deliveries Tue-Fri 12 trucks/day, Sat 6 trucks modules. Unloading: Piles/MS/SD/Controllers 100%, Tubes 20%, Panel Rails 43.48%, Modules 12%.",dec:"",act:"No",own:"--",dr:"2026-01-21",td:""},
-  {id:15,disc:"Construction",subj:"Work Flow",resp:"GRS/ACLE",stat:"Open",pri:"Low",notes:"Surveying: A1, A2NE, Blocks 41-45, 58-61, 76-77, 85-87, 80. Piling: 75->62->57S->50S->51N->57N->31->49. Structure: ACLE to start tracker install next week. Earthworks: B62, B51 done, 41-44 current, 46 next.",dec:"",act:"No",own:"--",dr:"2026-03-06",td:""},
+  {id:15,disc:"Construction",subj:"Work Flow",resp:"GRS/ACLE",stat:"Open",pri:"Low",notes:"Surveying: A1, A2NE, Blocks 41-45, 58-61, 76-77, 85-87, 80. Piling: 75->62->57S->50S->51N->57N->31->49. Earthworks: B62, B51 done, 41-44 current, 46 next.",dec:"",act:"No",own:"--",dr:"2026-03-06",td:""},
   {id:16,disc:"General",subj:"Project Documentation",resp:"GRS",stat:"Open",pri:"Low",notes:"GRS to share Module sorting maps via transmittal once updated with next batches of flash test data.",dec:"",act:"Yes",own:"JC",dr:"2026-03-06",td:"2026-05-01"},
-  {id:21,disc:"Quality",subj:"Galvanization Manufacturing issue",resp:"GRS/ACLE",stat:"Open",pri:"Low",notes:"Block 84 inspection: 45 piles to fix (8% total, 14% north, 6% south). Awaiting PVH zinc content confirmation. Criteria: uncoated above top hole/scratches = ACLE. Within PVH catalog = GRS punch list.",dec:"",act:"Yes",own:"JC",dr:"2026-03-06",td:"2026-04-30"},
+  {id:21,disc:"Quality",subj:"Galvanization Manufacturing issue",resp:"GRS/ACLE",stat:"Open",pri:"Low",notes:"Block 84 inspection: 45 piles to fix (8% total, 14% north, 6% south). Awaiting PVH zinc content confirmation. Criteria: uncoated/scratches = ACLE. Within PVH catalog = GRS punch list.",dec:"",act:"Yes",own:"JC",dr:"2026-03-06",td:"2026-04-30"},
   {id:23,disc:"HSE",subj:"Manual handling training",resp:"ACLE",stat:"Open",pri:"Low",notes:"Training records up to date. GRS noted manual handling injuries. ACLE updated training and carried out toolbox.",dec:"",act:"Yes",own:"SF",dr:"2026-03-06",td:""},
   {id:27,disc:"Construction",subj:"Quarantine and Storage Areas",resp:"ACLE",stat:"Open",pri:"Low",notes:"Quarantine Areas: Blocks 3, 50, 75. Storage areas: B51/B36/B10.",dec:"ACLE to update quarantine areas per acceptance criteria.",act:"No",own:"--",dr:"2026-03-06",td:""},
   {id:28,disc:"Construction",subj:"DCB piles",resp:"ACLE",stat:"Open",pri:"Low",notes:"ACLE to confirm next handover date for 5-block gap; expecting to catch up on painting works.",dec:"GRS, ACLE and CTC to meet for site inspection at 10am, 17th April.",act:"No",own:"--",dr:"2026-03-06",td:""},
@@ -55,22 +55,99 @@ const STATS = ["Open","Closed"];
 const PRIS  = ["Low","Medium","High"];
 const INIS  = ["--","JC","DP","CP","SS","FZ","LS","JW","EP","PJ","SF","AC","JD","PS","IG","LG","KJ","AL","SH","ED","SC"];
 
+const CONTACTS = {
+  "JC":{name:"Joaquin Cespedes",        email:"jcespedes@gransolar.com"},
+  "DP":{name:"Daniel Pinilla Bertuzzi", email:"dbertuzzi@gransolar.com"},
+  "CP":{name:"Clothilde Poigeaut",      email:"cpoigeaut@gransolar.com"},
+  "SS":{name:"Sergio Sanchez Artime",   email:"ssanchez@gransolar.com"},
+  "FZ":{name:"Fabricio Zabala",         email:"fzabala@gransolar.com"},
+  "LS":{name:"Lautaro Serrano",         email:"lserrano@gransolar.com"},
+  "JW":{name:"John Wetherell",          email:"jwetherell@gransolar.com"},
+  "EP":{name:"Ed Paroz",                email:"eparoz@gransolar.com"},
+  "PJ":{name:"Paul Joy",                email:"paul.joy@acle.com.au"},
+  "SF":{name:"Shane Fimmel",            email:"shane.fimmel@acle.com.au"},
+  "AC":{name:"Ariel Cespedes",          email:"ariel.cespedes@acle.com.au"},
+  "JD":{name:"Janie Duval",             email:"j.duval@acle.com.au"},
+  "PS":{name:"Peter Symington",         email:"peter.symington@acle.com.au"},
+  "IG":{name:"Ignacio Gaete Forno",     email:"ignacio.forno@acle.com.au"},
+  "LG":{name:"Luciano Gisande",         email:"lgisande@gransolar.com"},
+  "KJ":{name:"Katarzyna Janiczak",      email:"k.hincyngier@acle.com.au"},
+  "AL":{name:"Alejandra Leyton",        email:"aleyton@gransolar.com"},
+  "SH":{name:"Stuart Happ",             email:""},
+  "ED":{name:"Enrique Dorado Banus",    email:"edbanus@gransolar.com"},
+  "SC":{name:"Santiago Colombo",        email:"scolombo@gransolar.com"},
+};
+
 function gToday() { return new Date().toISOString().split("T")[0]; }
 function ddiff(a,b) { if(!a||!b) return null; return Math.round((new Date(a)-new Date(b))/864e5); }
 function fmtD(d) { if(!d) return "--"; var p=d.split("-"); return p[2]+"-"+p[1]+"-"+p[0].slice(2); }
 function p3(n) { return String(n).padStart(3,"0"); }
 function respColor(r) { return (r==="GRS"||r==="GRS/ACLE") ? GRS_RED : "#1e293b"; }
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 
-function loadState() {
+// ── Reminder helpers ─────────────────────────────────────────
+function getReminderGroups(items) {
+  var td = gToday();
+  var groups = {};
+  items.forEach(function(it){
+    if(it.act!=="Yes" || it.stat!=="Open" || !it.td || !it.own || it.own==="--") return;
+    var due = ddiff(it.td, td);
+    if(due!==1 && due!==3) return;
+    if(!groups[it.own]) groups[it.own] = {due:due, items:[]};
+    groups[it.own].items.push(it);
+  });
+  return groups;
+}
+
+function buildMailtoLink(own, ownerItems, due) {
+  var contact = CONTACTS[own] || {name:own, email:""};
+  var firstName = contact.name.split(" ")[0];
+  var dueLabel = due===1 ? "tomorrow" : "in 3 days";
+  var subj = "[REMINDER] BLI Site MoM - Action Required - Due "+dueLabel;
+  var sep = "\n"+Array(65).join("-")+"\n";
+  var rows = ownerItems.map(function(it){
+    var cols = [
+      "#"+it.id,
+      "Subject: "+it.subj,
+      "Notes: "+it.notes,
+      "Decision: "+(it.dec||"--"),
+      "Owner: "+own,
+      "Target Date: "+fmtD(it.td),
+    ];
+    return cols.join("\n");
+  }).join(sep);
+  var body =
+    "Dear "+firstName+",\n\n"
+    +"This is a kind reminder for you to Act on your open item in line with the Decision/Direction given:\n"
+    +sep+rows+sep+"\n"
+    +"If you have already completed your action, please let me know to mark this item as completed.\n\n"
+    +"Kind regards,\nJoaquin";
+  return "mailto:"+contact.email
+    +"?cc=jcespedes%40gransolar.com"
+    +"&subject="+encodeURIComponent(subj)
+    +"&body="+encodeURIComponent(body);
+}
+
+// ── Version storage ──────────────────────────────────────────
+function loadVersions() {
   try { var r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; } catch(e){return null;}
 }
-function saveState(s) {
-  try { localStorage.setItem(STORAGE_KEY,JSON.stringify(s)); } catch(e){}
+function persistVersions(vs) {
+  try { localStorage.setItem(STORAGE_KEY,JSON.stringify(vs)); } catch(e){}
 }
-function clearState() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+function defaultVersion() {
+  return {id:uid(),name:"MOM-008 (initial)",ts:gToday(),
+    doc:{num:8,meet:"2026-04-24",issue:"2026-04-24"},
+    atts:ATTS_D,items:IMS_D,nxtId:55};
+}
+function initVersionStore() {
+  var stored=loadVersions();
+  if(stored&&stored.versions&&stored.versions.length>0) return stored;
+  var v=defaultVersion();
+  return {versions:[v],activeId:v.id};
 }
 
+// ── Print ────────────────────────────────────────────────────
 function buildPrint(doc,atts,items) {
   var td=gToday();
   var tpts=td.split("-");
@@ -85,10 +162,9 @@ function buildPrint(doc,atts,items) {
     var due=(it.act==="Yes"&&it.td)?ddiff(it.td,td):null;
     var dc=due!=null?(due<0?"#dc2626":due<=3?"#d97706":"#16a34a"):"#666";
     var sc=it.stat==="Open"?"#dc2626":"#16a34a";
-    var rc=respColor(it.resp);
     return "<tr style='border-bottom:1px solid #e2e8f0'>"
       +"<td align='center'><b>"+it.id+"</b></td><td>"+it.disc+"</td><td>"+it.subj+"</td>"
-      +"<td align='center' style='color:"+rc+";font-weight:bold'>"+it.resp+"</td>"
+      +"<td align='center' style='color:"+respColor(it.resp)+";font-weight:bold'>"+it.resp+"</td>"
       +"<td style='color:"+sc+";font-weight:bold'>"+it.stat+"</td><td>"+it.pri+"</td>"
       +"<td style='white-space:pre-wrap;max-width:200px'>"+it.notes+"</td>"
       +"<td style='white-space:pre-wrap;max-width:150px'>"+it.dec+"</td>"
@@ -116,28 +192,69 @@ function buildPrint(doc,atts,items) {
   return h.join("");
 }
 
+// ── App ──────────────────────────────────────────────────────
 export default function App() {
-  var saved=loadState();
-  var [doc,setDoc]     = useState(saved&&saved.doc   ? saved.doc   : {num:8,meet:"2026-04-24",issue:"2026-04-24"});
-  var [atts,setAtts]   = useState(saved&&saved.atts  ? saved.atts  : ATTS_D);
-  var [items,setItems] = useState(saved&&saved.items ? saved.items : IMS_D);
-  var [nxtId,setNxtId] = useState(saved&&saved.nxtId ? saved.nxtId : 55);
-  var [showA,setShowA] = useState(false);
-  var [toast,setToast] = useState("");
-  var [sortCol,setSortCol] = useState(null);
-  var [sortDir,setSortDir] = useState("asc");
-  var [filters,setFilters] = useState({disc:"",stat:"",pri:"",resp:""});
+  var store = initVersionStore();
+  var [versions,setVersions]     = useState(store.versions);
+  var [activeId,setActiveId]     = useState(store.activeId);
+  var [showVersions,setShowVersions] = useState(false);
+  var [showReminders,setShowReminders] = useState(false);
+  var [saveAsName,setSaveAsName] = useState("");
+  var [showSaveAs,setShowSaveAs] = useState(false);
+  var [headerCollapsed,setHeaderCollapsed] = useState(false);
+  var [showA,setShowA]           = useState(true);
+  var [toast,setToast]           = useState("");
+  var [sortCol,setSortCol]       = useState(null);
+  var [sortDir,setSortDir]       = useState("asc");
+  var [filters,setFilters]       = useState({disc:"",stat:"",pri:"",resp:""});
+
+  var active = versions.find(function(v){return v.id===activeId;})||versions[0];
+  var doc=active.doc, atts=active.atts, items=active.items, nxtId=active.nxtId;
+
+  function persist(nv,naid){
+    setVersions(nv);
+    if(naid!==undefined) setActiveId(naid);
+    persistVersions({versions:nv,activeId:naid!==undefined?naid:activeId});
+  }
+  function updateActive(patch){
+    persist(versions.map(function(v){return v.id===activeId?Object.assign({},v,patch):v;}));
+  }
+  function setDoc(fn)  {updateActive({doc:  typeof fn==="function"?fn(doc):fn});}
+  function setAtts(fn) {updateActive({atts: typeof fn==="function"?fn(atts):fn});}
+  function setItems(fn){updateActive({items:typeof fn==="function"?fn(items):fn});}
+  function setNxtId(fn){updateActive({nxtId:typeof fn==="function"?fn(nxtId):fn});}
 
   function pop(msg){setToast(msg);setTimeout(function(){setToast("");},2500);}
+  function save(){updateActive({ts:gToday()});pop("Saved");}
 
-  function save(){saveState({doc,atts,items,nxtId});pop("Saved");}
-
-  function doReset(){
-    setDoc({num:8,meet:"2026-04-24",issue:"2026-04-24"});
-    setAtts(ATTS_D);setItems(IMS_D);setNxtId(55);
-    setSortCol(null);setFilters({disc:"",stat:"",pri:"",resp:""});
-    clearState();pop("Reset to MOM-007 defaults");
+  function doSaveAs(){
+    var name=saveAsName.trim()||("MOM-"+p3(doc.num)+" ("+fmtD(gToday())+")");
+    var v={id:uid(),name:name,ts:gToday(),
+      doc:JSON.parse(JSON.stringify(doc)),
+      atts:JSON.parse(JSON.stringify(atts)),
+      items:JSON.parse(JSON.stringify(items)),nxtId:nxtId};
+    var nv=[...versions,v];
+    persist(nv,v.id);
+    setSaveAsName("");setShowSaveAs(false);setShowVersions(false);
+    pop("Saved as: "+name);
   }
+  function newVersion(){
+    var v=defaultVersion(); v.name="New MOM ("+fmtD(gToday())+")";
+    persist([...versions,v],v.id);
+    setShowVersions(false);pop("New version created");
+  }
+  function deleteVersion(id){
+    if(versions.length===1){pop("Cannot delete the only version.");return;}
+    var nv=versions.filter(function(v){return v.id!==id;});
+    var naid=activeId===id?nv[nv.length-1].id:activeId;
+    persist(nv,naid);pop("Version deleted");
+  }
+  function switchVersion(id){
+    setActiveId(id);persistVersions({versions:versions,activeId:id});
+    setShowVersions(false);setSortCol(null);setFilters({disc:"",stat:"",pri:"",resp:""});
+    pop("Switched version");
+  }
+  function doReset(){setAtts(function(p){return p.map(function(a){return Object.assign({},a,{p:false});});});pop("Attendees reset to N");}
 
   function newItem(afterId){
     var it={id:nxtId,disc:"Construction",subj:"",resp:"GRS",stat:"Open",pri:"Low",notes:"",dec:"",act:"No",own:"--",dr:gToday(),td:""};
@@ -148,7 +265,6 @@ export default function App() {
     });
     setNxtId(function(n){return n+1;});
   }
-
   function upd(id,f,v){
     setItems(function(p){return p.map(function(it){
       if(it.id!==id) return it;
@@ -157,7 +273,6 @@ export default function App() {
       return u;
     });});
   }
-
   function del(id){setItems(function(p){return p.filter(function(i){return i.id!==id;});});}
   function togA(i){setAtts(function(p){return p.map(function(a,j){return j===i?Object.assign({},a,{p:!a.p}):a;});});}
   function toggleSort(col){
@@ -166,6 +281,8 @@ export default function App() {
   }
 
   var today=gToday();
+  var reminderGroups=useMemo(function(){return getReminderGroups(items);},[items]);
+  var reminderCount=Object.keys(reminderGroups).length;
 
   var displayed=useMemo(function(){
     var res=items.filter(function(i){
@@ -194,6 +311,8 @@ export default function App() {
   var selSt={background:"transparent",fontSize:"11px",border:"none",outline:"none"};
   var inSt={background:"transparent",fontSize:"11px",border:"none",outline:"none"};
   var taSt={background:"transparent",fontSize:"11px",border:"none",outline:"none",fontFamily:"Calibri,sans-serif",resize:"vertical",minHeight:"38px",width:"100%"};
+  var modalBg={position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center"};
+  var modalBox={background:"#fff",borderRadius:8,padding:20,width:520,maxWidth:"95vw",maxHeight:"82vh",overflowY:"auto",boxShadow:"0 8px 32px rgba(0,0,0,0.2)"};
 
   function sa(c){return sortCol===c?(sortDir==="asc"?" ^":" v"):"";}
   function statColor(s){return s==="Open"?"#dc2626":"#16a34a";}
@@ -205,54 +324,170 @@ export default function App() {
 
       {toast&&<div style={{position:"fixed",top:10,right:10,zIndex:999,background:DARK,color:"#fff",fontSize:"12px",padding:"6px 14px",borderRadius:5}}>{toast}</div>}
 
+      {/* ── Reminders Modal ── */}
+      {showReminders&&(
+        <div style={modalBg} onClick={function(e){if(e.target===e.currentTarget)setShowReminders(false);}}>
+          <div style={modalBox}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <b style={{fontSize:"13px",color:DARK}}>Email Reminders — Active Version: {active.name}</b>
+              <button onClick={function(){setShowReminders(false);}} style={{background:"none",border:"none",fontSize:"18px",cursor:"pointer",color:"#6b7280"}}>x</button>
+            </div>
+            <div style={{fontSize:"11px",color:"#64748b",marginBottom:12,padding:"6px 10px",background:"#f8fafc",borderRadius:4,border:"1px solid #e2e8f0"}}>
+              Reminders are generated for open action items with a Target Date due in <b>exactly 1 day</b> or <b>3 days</b> from today ({fmtD(today)}). Clicking "Draft in Outlook" opens your default email client pre-filled.
+            </div>
+            {reminderCount===0?(
+              <div style={{textAlign:"center",padding:"30px 0",color:"#94a3b8",fontSize:"12px"}}>
+                No reminders due today.<br/>
+                <span style={{fontSize:"10px"}}>Items due in 1 or 3 days will appear here automatically.</span>
+              </div>
+            ):(
+              Object.keys(reminderGroups).map(function(own){
+                var grp=reminderGroups[own];
+                var contact=CONTACTS[own]||{name:own,email:""};
+                var dueLabel=grp.due===1?"Due TOMORROW":"Due in 3 days";
+                var dueClr=grp.due===1?"#dc2626":"#d97706";
+                var mailto=buildMailtoLink(own,grp.items,grp.due);
+                return(
+                  <div key={own} style={{border:"1px solid #e2e8f0",borderRadius:6,marginBottom:10,overflow:"hidden"}}>
+                    <div style={{background:"#f8fafc",padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <div>
+                        <span style={{fontWeight:"bold",fontSize:"12px",color:DARK}}>{contact.name}</span>
+                        <span style={{marginLeft:8,fontSize:"10px",color:"#64748b"}}>{contact.email||"no email on file"}</span>
+                        <span style={{marginLeft:8,fontSize:"10px",fontWeight:"bold",color:dueClr}}>{dueLabel}</span>
+                      </div>
+                      {contact.email?(
+                        <a href={mailto} style={{fontSize:"11px",padding:"3px 10px",borderRadius:3,border:"1px solid "+GRS_RED,color:"#fff",background:GRS_RED,cursor:"pointer",textDecoration:"none",fontWeight:"bold"}}>
+                          Draft in Outlook
+                        </a>
+                      ):(
+                        <span style={{fontSize:"10px",color:"#dc2626"}}>No email</span>
+                      )}
+                    </div>
+                    <table style={{width:"100%",borderCollapse:"collapse",fontSize:"10px"}}>
+                      <thead>
+                        <tr style={{background:GRS_RED,color:"#fff"}}>
+                          {["#","Subject","Notes","Decision / Direction","Owner","Target Date"].map(function(h){
+                            return <th key={h} style={{padding:"3px 6px",textAlign:"left",fontWeight:"bold"}}>{h}</th>;
+                          })}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {grp.items.map(function(it){
+                          return(
+                            <tr key={it.id} style={{borderBottom:"1px solid #f1f5f9"}}>
+                              <td style={{padding:"3px 6px",fontWeight:"bold",color:"#334155"}}>{it.id}</td>
+                              <td style={{padding:"3px 6px"}}>{it.subj}</td>
+                              <td style={{padding:"3px 6px",color:"#475569",maxWidth:130,whiteSpace:"pre-wrap"}}>{it.notes}</td>
+                              <td style={{padding:"3px 6px",color:"#475569",maxWidth:130,whiteSpace:"pre-wrap"}}>{it.dec||"--"}</td>
+                              <td style={{padding:"3px 6px",fontWeight:"bold",color:GRS_RED}}>{own}</td>
+                              <td style={{padding:"3px 6px",fontWeight:"bold",color:dueClr}}>{fmtD(it.td)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Version Modal ── */}
+      {showVersions&&(
+        <div style={modalBg} onClick={function(e){if(e.target===e.currentTarget){setShowVersions(false);setShowSaveAs(false);}}}>
+          <div style={modalBox}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <b style={{fontSize:"13px",color:DARK}}>Version Manager</b>
+              <button onClick={function(){setShowVersions(false);setShowSaveAs(false);}} style={{background:"none",border:"none",fontSize:"18px",cursor:"pointer",color:"#6b7280"}}>x</button>
+            </div>
+            {versions.slice().reverse().map(function(v){
+              var isAct=v.id===activeId;
+              return(
+                <div key={v.id} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 8px",borderRadius:5,marginBottom:4,background:isAct?"#fef2f2":"#f8fafc",border:"1px solid "+(isAct?GRS_RED:"#e2e8f0")}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:"bold",fontSize:"12px",color:isAct?GRS_RED:DARK}}>{v.name}</div>
+                    <div style={{fontSize:"10px",color:"#94a3b8"}}>Saved: {fmtD(v.ts)} &nbsp;|&nbsp; {v.items.length} items</div>
+                  </div>
+                  {!isAct&&<button onClick={function(){switchVersion(v.id);}} style={{fontSize:"11px",padding:"2px 8px",borderRadius:3,border:"1px solid "+GRS_RED,color:GRS_RED,background:"#fff",cursor:"pointer"}}>Open</button>}
+                  {isAct&&<span style={{fontSize:"10px",color:GRS_RED,fontWeight:"bold"}}>ACTIVE</span>}
+                  {versions.length>1&&<button onClick={function(){deleteVersion(v.id);}} style={{fontSize:"11px",padding:"2px 6px",borderRadius:3,border:"1px solid #fca5a5",color:"#dc2626",background:"#fff",cursor:"pointer"}}>Del</button>}
+                </div>
+              );
+            })}
+            <div style={{borderTop:"1px solid #e2e8f0",marginTop:12,paddingTop:12,display:"flex",gap:6,flexWrap:"wrap"}}>
+              <button onClick={newVersion} style={Object.assign({},btnW,{fontSize:"11px"})}>+ New blank version</button>
+              <button onClick={function(){setShowSaveAs(true);}} style={Object.assign({},btnW,{fontSize:"11px"})}>Save As (copy current)</button>
+            </div>
+            {showSaveAs&&(
+              <div style={{marginTop:10,display:"flex",gap:6,alignItems:"center"}}>
+                <input value={saveAsName} onChange={function(e){setSaveAsName(e.target.value);}} placeholder={"e.g. MOM-009 ("+fmtD(gToday())+")"} style={{flex:1,border:"1px solid #d1d5db",borderRadius:3,padding:"3px 6px",fontSize:"11px"}}/>
+                <button onClick={doSaveAs} style={Object.assign({},btnW,{background:GRS_RED,color:"#fff",fontSize:"11px"})}>Save</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Top bar ── */}
       <div style={{background:GRS_RED,color:"#fff",padding:"7px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:50}}>
         <div>
           <div style={{fontWeight:"bold",fontSize:"13px"}}>BLI-GRS-ACLE Site Meetings MoM</div>
           <div style={{fontSize:"10px",opacity:0.85}}>Blindcreek Solar Farm &amp; BESS</div>
         </div>
-        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+        <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
           <button style={btnW} onClick={save}>Save</button>
+          <button style={Object.assign({},btnW,{background:"#fde8ea"})} onClick={function(){setShowVersions(true);}}>Versions</button>
           <button style={btnW} onClick={function(){var html=buildPrint(doc,atts,displayed);var w=window.open("","_blank");if(!w){pop("Enable popups");return;}w.document.write(html);w.document.close();setTimeout(function(){w.print();},600);}}>Print PDF</button>
-          <button style={btnW} onClick={function(){var s="BLI-GRS-ACL-EML-0016-MoM - Weekly Meetings";var b="Hi all,\n\nPlease find attached MoM from last meeting, and review if you have any action on your name and complete by target date.\n\nThank you and looking forward to meeting you again.\n\nKind regards";window.open("mailto:jcespedes@gransolar.com?subject="+encodeURIComponent(s)+"&body="+encodeURIComponent(b));}}>Email</button>
+          <button onClick={function(){setShowReminders(true);}}
+            style={Object.assign({},btnW,reminderCount>0?{background:"#fef3c7",color:"#92400e",borderColor:"#fcd34d"}:{})}>
+            Reminders{reminderCount>0?" ("+reminderCount+")":""}
+          </button>
           <button style={Object.assign({},btnW,{background:"#fef3c7",color:"#92400e",borderColor:"#fcd34d"})} onClick={function(){newItem(null);}}>+ Add Item</button>
-          <button style={Object.assign({},btnW,{background:"#374151",color:"#fff",borderColor:"#374151"})} onClick={doReset}>Reset</button>
+          <button title={headerCollapsed?"Expand header":"Collapse header"} onClick={function(){setHeaderCollapsed(function(s){return !s;});}}
+            style={{background:"#fff",color:GRS_RED,border:"1px solid #e2b4b7",borderRadius:4,padding:"3px 8px",fontSize:"13px",cursor:"pointer"}}>
+            {headerCollapsed?"▼":"▲"}
+          </button>
+          <button style={Object.assign({},btnW,{background:"#374151",color:"#fff",borderColor:"#374151"})} onClick={doReset} title="Reset all attendees to N">Reset</button>
         </div>
       </div>
 
-      <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"5px 12px",display:"flex",flexWrap:"wrap",gap:10,alignItems:"center"}}>
-        <span style={{fontSize:"11px",color:"#64748b"}}>Last print: <b style={{color:"#334155"}}>BLI-GRS-ACL-MOM-{p3(doc.num-1)}</b></span>
-        <span style={{fontSize:"11px",color:"#64748b"}}>This Document: <b style={{color:GRS_RED,fontSize:"13px"}}>BLI-GRS-ACL-MOM-{p3(doc.num)}</b></span>
-        <span style={{fontSize:"11px",color:"#94a3b8"}}>Doc#
-          <input type="number" value={doc.num} onChange={function(e){setDoc(function(d){return Object.assign({},d,{num:+e.target.value});});}} style={{width:44,border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4,textAlign:"center"}}/>
-        </span>
-        <span style={{fontSize:"11px",color:"#94a3b8"}}>Meeting
-          <input type="date" value={doc.meet} onChange={function(e){setDoc(function(d){return Object.assign({},d,{meet:e.target.value});});}} style={{border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4}}/>
-        </span>
-        <span style={{marginLeft:"auto",fontSize:"11px",color:"#64748b"}}>Today: <b>{fmtD(today)}</b></span>
-      </div>
-
-      <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"4px 14px",display:"flex",gap:14,fontSize:"11px",alignItems:"center",flexWrap:"wrap"}}>
-        <span style={{color:"#64748b"}}>{items.length} items ({displayed.length} shown)</span>
-        <span style={{color:"#dc2626",fontWeight:"bold"}}>{items.filter(function(i){return i.stat==="Open";}).length} Open</span>
-        <span style={{color:"#16a34a",fontWeight:"bold"}}>{items.filter(function(i){return i.stat==="Closed";}).length} Closed</span>
-        <span style={{color:"#1d4ed8"}}>{items.filter(function(i){return i.act==="Yes";}).length} w/ actions</span>
-        {overdue>0&&<span style={{color:"#dc2626",fontWeight:"bold"}}>{overdue} overdue</span>}
-        <button onClick={function(){setShowA(function(s){return !s;});}} style={{marginLeft:"auto",background:"none",border:"1px solid #d1d5db",borderRadius:3,cursor:"pointer",fontSize:"11px",color:"#475569",padding:"1px 8px"}}>
-          Attendees ({atts.filter(function(a){return a.p;}).length}/{atts.length}) {showA?"^":"v"}
-        </button>
-      </div>
-
-      {showA&&(
-        <div style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0",padding:"6px 14px",display:"flex",flexWrap:"wrap",gap:4}}>
-          {atts.map(function(a,i){
-            return <button key={i} onClick={function(){togA(i);}} title={a.n}
-              style={{padding:"2px 8px",borderRadius:3,fontSize:"11px",cursor:"pointer",border:"1px solid "+(a.p?"#86efac":"#fca5a5"),background:a.p?"#f0fdf4":"#fff5f5",color:a.p?"#166534":"#991b1b"}}>
-              <b>{a.i}</b> <span style={{opacity:0.6,fontSize:"10px"}}>{a.c}</span> {a.p?"Y":"N"}
-            </button>;
-          })}
+      {/* ── Collapsible header ── */}
+      {!headerCollapsed&&(
+        <div>
+          <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"5px 12px",display:"flex",flexWrap:"wrap",gap:10,alignItems:"center"}}>
+            <span style={{fontSize:"11px",color:"#64748b"}}>Last print: <b style={{color:"#334155"}}>BLI-GRS-ACL-MOM-{p3(doc.num-1)}</b></span>
+            <span style={{fontSize:"11px",color:"#64748b"}}>This Document: <b style={{color:GRS_RED,fontSize:"13px"}}>BLI-GRS-ACL-MOM-{p3(doc.num)}</b></span>
+            <span style={{fontSize:"11px",color:"#94a3b8"}}>Doc#<input type="number" value={doc.num} onChange={function(e){setDoc(function(d){return Object.assign({},d,{num:+e.target.value});});}} style={{width:44,border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4,textAlign:"center"}}/></span>
+            <span style={{fontSize:"11px",color:"#94a3b8"}}>Meeting<input type="date" value={doc.meet} onChange={function(e){setDoc(function(d){return Object.assign({},d,{meet:e.target.value});});}} style={{border:"1px solid #d1d5db",borderRadius:3,padding:"1px 4px",fontSize:"11px",marginLeft:4}}/></span>
+            <span style={{fontSize:"11px",color:"#94a3b8",marginLeft:"auto"}}>Version: <b style={{color:GRS_RED}}>{active.name}</b></span>
+            <span style={{fontSize:"11px",color:"#64748b"}}>Today: <b>{fmtD(today)}</b></span>
+          </div>
+          <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"4px 14px",display:"flex",gap:14,fontSize:"11px",alignItems:"center",flexWrap:"wrap"}}>
+            <span style={{color:"#64748b"}}>{items.length} items ({displayed.length} shown)</span>
+            <span style={{color:"#dc2626",fontWeight:"bold"}}>{items.filter(function(i){return i.stat==="Open";}).length} Open</span>
+            <span style={{color:"#16a34a",fontWeight:"bold"}}>{items.filter(function(i){return i.stat==="Closed";}).length} Closed</span>
+            <span style={{color:"#1d4ed8"}}>{items.filter(function(i){return i.act==="Yes";}).length} w/ actions</span>
+            {overdue>0&&<span style={{color:"#dc2626",fontWeight:"bold"}}>{overdue} overdue</span>}
+            <button onClick={function(){setShowA(function(s){return !s;});}} style={{marginLeft:"auto",background:"none",border:"1px solid #d1d5db",borderRadius:3,cursor:"pointer",fontSize:"11px",color:"#475569",padding:"1px 8px"}}>
+              Attendees ({atts.filter(function(a){return a.p;}).length}/{atts.length}) {showA?"^":"v"}
+            </button>
+          </div>
+          {showA&&(
+            <div style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0",padding:"6px 14px",display:"flex",flexWrap:"wrap",gap:4}}>
+              {atts.map(function(a,i){
+                return <button key={i} onClick={function(){togA(i);}} title={a.n}
+                  style={{padding:"2px 8px",borderRadius:3,fontSize:"11px",cursor:"pointer",border:"1px solid "+(a.p?"#86efac":"#fca5a5"),background:a.p?"#f0fdf4":"#fff5f5",color:a.p?"#166534":"#991b1b"}}>
+                  <b>{a.i}</b> <span style={{opacity:0.6,fontSize:"10px"}}>{a.c}</span> {a.p?"Y":"N"}
+                </button>;
+              })}
+            </div>
+          )}
         </div>
       )}
 
+      {/* ── Filters ── */}
       <div style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0",padding:"5px 14px",display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
         <span style={{fontSize:"11px",color:"#64748b",fontWeight:"bold"}}>Filter:</span>
         {[{k:"disc",label:"Discipline",opts:DISCS},{k:"stat",label:"Status",opts:STATS},{k:"pri",label:"Priority",opts:PRIS},{k:"resp",label:"Responsible",opts:RESPS}].map(function(f){
@@ -266,7 +501,8 @@ export default function App() {
         )}
       </div>
 
-      <div style={{padding:"0 8px 8px",overflowX:"scroll",overflowY:"auto",maxHeight:"calc(100vh - 192px)"}}>
+      {/* ── Table ── */}
+      <div style={{padding:"0 8px 8px",overflowX:"scroll",overflowY:"auto",maxHeight:headerCollapsed?"calc(100vh - 92px)":"calc(100vh - 192px)"}}>
         <table style={{borderCollapse:"collapse",minWidth:1820,fontSize:"11px",width:"100%",background:"#fff"}}>
           <thead>
             <tr>
@@ -292,7 +528,7 @@ export default function App() {
               var isNew=it.dr===today;
               var age=(it.act==="Yes"&&it.dr)?ddiff(today,it.dr):null;
               var due=(it.act==="Yes"&&it.td)?ddiff(it.td,today):null;
-              return (
+              return(
                 <tr key={it.id} style={{background:isNew?"#fefce8":"#fff",borderBottom:"1px solid #e2e8f0"}}>
                   <td style={Object.assign({},tdSt,{textAlign:"center",fontWeight:"bold",color:"#334155",minWidth:28})}>
                     {it.id}{isNew&&<div style={{color:"#d97706",fontSize:"9px"}}>NEW</div>}
